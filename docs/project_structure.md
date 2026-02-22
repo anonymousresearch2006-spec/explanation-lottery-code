@@ -70,7 +70,7 @@ Typical tasks include:
 
 ---
 
-### `02_scaling/`
+### `02_extension/`
 
 Large-scale experimentation extending the initial findings.
 
@@ -85,7 +85,7 @@ This stage validates the generality of the observed phenomenon.
 
 ---
 
-### `03_rigor/`
+### `03_rigor_and_proofs/`
 
 Formal statistical validation and theoretical investigation.
 

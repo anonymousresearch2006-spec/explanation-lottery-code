@@ -52,8 +52,8 @@ def fix_content(content):
     
     return content
 
-# Process all optimised_001 scripts
-scripts = sorted([f for f in os.listdir('.') if '_optimised_001_' in f and f.endswith('.py')])
+# Process all roadmap scripts
+scripts = sorted([f for f in os.listdir('.') if f.endswith('.py') and (f[:2].isdigit() and '_' in f)])
 
 for script in scripts:
     print(f"Processing {script}...")

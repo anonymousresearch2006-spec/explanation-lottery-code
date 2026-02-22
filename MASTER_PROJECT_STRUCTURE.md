@@ -34,7 +34,7 @@ project_root/
 Contains all executable research code organized by development phase.
 
 * **01_foundations/** — Initial discovery experiments identifying explanation disagreement.
-* **02_q1_extension/** — Scaled experiments and cross-dataset analysis.
+* **02_extension/** — Scaled experiments and cross-dataset analysis.
 * **03_rigor_and_proofs/** — Statistical validation and theoretical analysis.
 * **04_official_roadmap/** — Core optimized experiments used to generate manuscript results.
 * **05_infrastructure/** — Execution utilities and orchestration tools.
