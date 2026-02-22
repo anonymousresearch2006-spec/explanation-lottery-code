@@ -60,7 +60,7 @@ requirements.txt      # Environment specification
 ### scripts/
 
 - **01_foundations/** — Initial discovery experiments.
-- **02_q1_extension/** — Scaled dataset evaluation and cross-family analysis.
+- **02_extension/** — Scaled dataset evaluation and cross-family analysis.
 - **03_rigor_and_proofs/** — Statistical verification and theoretical analysis.
 - **04_official_roadmap/** — Core optimized experiments used in the manuscript.
 - **05_infrastructure/** — Execution utilities and orchestration tools.

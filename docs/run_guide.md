@@ -135,7 +135,7 @@ Experiments can be executed independently for targeted analysis or debugging.
 Example:
 
 ```
-python scripts/04_official_roadmap/01_optimised_001_novelty_surprise.py
+python scripts/04_official_roadmap/01_novelty_surprise.py
 ```
 
 This allows:
