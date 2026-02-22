@@ -9,14 +9,14 @@
 ---
 
 ## Overview
-
-![Technical Pipeline](results/01_visualizations/tech_pipeline.png)
-
 Do machine learning models that agree on predictions also agree on explanations?
 
 This project investigates the **Explanation Lottery** — a phenomenon where models produce identical predictions but contradictory feature attribution explanations. The study performs large-scale cross-model explanation comparisons using SHAP across multiple datasets and model families.
 
 The repository provides a fully reproducible experimental pipeline, statistical analysis framework, and verification suite supporting the results reported in the manuscript.
+
+![Technical Pipeline](results/01_visualizations/tech_pipeline.png)
+
 
 ---
 
