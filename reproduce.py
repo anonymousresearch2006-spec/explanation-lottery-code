@@ -52,7 +52,7 @@ def main():
 
     # 3. Run the official roadmap
     print("\n[STEP 3/3] Running the official experiment roadmap...")
-    runner_path = os.path.join("scripts", "05_infrastructure", "run_all_optimised_001.py")
+    runner_path = os.path.join("scripts", "05_infrastructure", "run_roadmap.py")
 
     if not os.path.exists(runner_path):
         print(f"  - ERROR: Runner not found at: {runner_path}")
