@@ -22,6 +22,7 @@ It ensures full reproducibility and verification of reported findings.
 
 ## Technical Verification
 
-- Spearman ρ computation verified in `11_reliability_score.py`
-- All scripts derive results from a shared data foundation (`combined_results.csv`)
-- Codebase functions as an executable mirror of the manuscript.
+- **Spearman ρ computation** verified in `11_reliability_score.py`
+- **Data Foundation**: All raw datasets are retrieved via [download_data.py](../data/download_data.py) (see [data/README.md](../data/README.md))
+- **Results Mirror**: All reported metrics are consolidated in [elite_results.json](../results/00_publication_findings/elite_results.json)
+- **Codebase Integrity**: The repository serves as a bit-for-bit executable mirror of the reported manuscript findings.
