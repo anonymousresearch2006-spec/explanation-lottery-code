@@ -1,0 +1,116 @@
+{
+    "spearman_rho": -0.43534726143421804,
+    "p_value": 0.04286132630167676,
+    "raw": [
+        {
+            "dataset": "bank-marketing",
+            "interaction_strength": 0.0757688697001637,
+            "disagreement": 0.6749999999999999
+        },
+        {
+            "dataset": "german-credit",
+            "interaction_strength": 0.08044680006986328,
+            "disagreement": 0.38115299976336314
+        },
+        {
+            "dataset": "blood-transfusion",
+            "interaction_strength": 0.1361603661779214,
+            "disagreement": 0.4099999999999999
+        },
+        {
+            "dataset": "spambase",
+            "interaction_strength": 0.009951412910256792,
+            "disagreement": 0.4185619469026548
+        },
+        {
+            "dataset": "wdbc",
+            "interaction_strength": 0.021805022699073952,
+            "disagreement": 0.9132306477093207
+        },
+        {
+            "dataset": "diabetes",
+            "interaction_strength": 0.05019543926746623,
+            "disagreement": 0.7511904761904762
+        },
+        {
+            "dataset": "qsar-biodeg",
+            "interaction_strength": 0.021611386165952384,
+            "disagreement": 0.7560276073619632
+        },
+        {
+            "dataset": "phoneme",
+            "interaction_strength": 0.09483099840187081,
+            "disagreement": 0.2450000000000001
+        },
+        {
+            "dataset": "churn",
+            "interaction_strength": 0.004985548164816427,
+            "disagreement": 0.7421861956228475
+        },
+        {
+            "dataset": "wall-robot-navigation",
+            "interaction_strength": 0.038285354736465944,
+            "disagreement": 0.7033197831978321
+        },
+        {
+            "dataset": "bioresponse",
+            "interaction_strength": 0.0006147696039267242,
+            "disagreement": 0.9367163008230008
+        },
+        {
+            "dataset": "banknote-authentication",
+            "interaction_strength": 0.12670693770354252,
+            "disagreement": 0.1299999999999999
+        },
+        {
+            "dataset": "mammography",
+            "interaction_strength": 0.17651892420423243,
+            "disagreement": 0.32499999999999996
+        },
+        {
+            "dataset": "cnae9",
+            "interaction_strength": 0.00021337741500295046,
+            "disagreement": 0.35301328069659466
+        },
+        {
+            "dataset": "gas-drift",
+            "interaction_strength": 0.011927696312979318,
+            "disagreement": 0.995799035475986
+        },
+        {
+            "dataset": "har",
+            "interaction_strength": 0.002140331213649918,
+            "disagreement": 0.9021078849985767
+        },
+        {
+            "dataset": "hill-valley",
+            "interaction_strength": 0.017674235573692087,
+            "disagreement": 0.9759797409498505
+        },
+        {
+            "dataset": "ilpd",
+            "interaction_strength": 0.05547724891525807,
+            "disagreement": 0.5824999999999999
+        },
+        {
+            "dataset": "nomao",
+            "interaction_strength": 0.008878648619234418,
+            "disagreement": 0.5010843714609287
+        },
+        {
+            "dataset": "pc4",
+            "interaction_strength": 0.02368661847782918,
+            "disagreement": 1.171165090283749
+        },
+        {
+            "dataset": "pc3",
+            "interaction_strength": 0.018854610276417025,
+            "disagreement": 0.9689697031005008
+        },
+        {
+            "dataset": "one-hundred-plants-texture",
+            "interaction_strength": 0.0,
+            "disagreement": 0.6767665948353445
+        }
+    ]
+}

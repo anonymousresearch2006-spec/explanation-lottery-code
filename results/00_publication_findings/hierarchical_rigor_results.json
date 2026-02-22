@@ -1,0 +1,26 @@
+{
+    "mixed_effects": {
+        "pvalues": {
+            "Intercept": 7.79466766380537e-08,
+            "interaction_mass": 0.960391185393719,
+            "dimensionality": 0.06483245960786736,
+            "redundancy": 0.6534611845090911,
+            "Group Var": 0.004392327066809642
+        },
+        "params": {
+            "Intercept": 0.6103042347701627,
+            "interaction_mass": 0.007514115337353725,
+            "dimensionality": 0.0007320731674479919,
+            "redundancy": 0.10790270446607077,
+            "Group Var": 1.633905585148589
+        },
+        "fe_sd": 0.12641286602345986,
+        "group_var": 0.3290150483164521
+    },
+    "within_dataset_monotonicity": {
+        "avg_rho": -0.06780442925482215,
+        "n_valid_datasets": 20
+    },
+    "n_samples": 603,
+    "n_groups": 21
+}

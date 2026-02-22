@@ -1,0 +1,44 @@
+# Data & Cache
+data/*
+!data/README.md
+!data/download_data.py
+
+# Model Metadata
+catboost_info/
+lightning_logs/
+__pycache__/
+*.pyc
+[cod]
+*$py.class
+.venv
+venv/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+
+# =============================
+# RESULTS POLICY (TMLR Standard)
+# =============================
+
+# Ignore all results
+results/*
+
+# Keep folder structure
+!results/README.md
+!results/00_publication_findings/
+!results/01_visualizations/
+
+# Keep files inside allowed folders
+!results/00_publication_findings/**
+!results/01_visualizations/**
+
+# Always ignore heavy outputs
+results/02_experiment_raw/
+results/03_model_weights/
+results/04_system_logs/
+results/05_model_metadata/
