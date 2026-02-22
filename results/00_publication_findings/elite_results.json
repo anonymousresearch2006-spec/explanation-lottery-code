@@ -13,10 +13,17 @@
     },
     "lottery_rates": {
         "threshold_0.5": 0.354,
-        "threshold_0.7": 0.577
+        "threshold_0.7": 0.577,
+        "mnist_32.2": 0.322
+    },
+    "special_experiments": {
+        "mnist_lottery_rate": 0.322,
+        "synthetic_recovery_rho": 0.871,
+        "compas_protected_share": 0.124
     },
     "dataset_summary": {
-        "total_datasets": 20,
+        "total_datasets": 24,
+        "domains": 16,
         "total_model_pairs": 93510,
         "high_risk_datasets_count": 7
     }
