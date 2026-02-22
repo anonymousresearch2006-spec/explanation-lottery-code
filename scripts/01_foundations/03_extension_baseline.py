@@ -34,7 +34,7 @@ print("="*70)
 FIGURES_DIR = "explanation_lottery/figures"
 RESULTS_DIR = "results"
 os.makedirs(FIGURES_DIR, exist_ok=True)
-os.makedirs(f"{RESULTS_DIR}/q1_extension", exist_ok=True)
+os.makedirs(f"{RESULTS_DIR}/extension", exist_ok=True)
 
 # Load data
 print("\nLoading data...")
@@ -547,16 +547,16 @@ print("SAVING Q1 EXTENSION RESULTS")
 print("="*70)
 
 # Save consensus comparison
-consensus_comparison.to_csv(f'{RESULTS_DIR}/q1_extension/consensus_comparison.csv', index=False)
+consensus_comparison.to_csv(f'{RESULTS_DIR}/extension/consensus_comparison.csv', index=False)
 
 # Save prediction results
-prediction_df.to_csv(f'{RESULTS_DIR}/q1_extension/prediction_features.csv', index=False)
+prediction_df.to_csv(f'{RESULTS_DIR}/extension/prediction_features.csv', index=False)
 
 # Save feature importance
-feature_importance.to_csv(f'{RESULTS_DIR}/q1_extension/feature_importance.csv', index=False)
+feature_importance.to_csv(f'{RESULTS_DIR}/extension/feature_importance.csv', index=False)
 
 # Save Q1 summary
-q1_summary = {
+summary = {
     'title': 'The Explanation Lottery: Why Model Choice Affects SHAP and How to Fix It',
     'version': 'Q1 Extension',
     'completed_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -607,14 +607,14 @@ q1_summary = {
     ]
 }
 
-with open(f'{RESULTS_DIR}/q1_extension/q1_summary.json', 'w') as f:
-    json.dump(q1_summary, f, indent=2, default=str)
+with open(f'{RESULTS_DIR}/extension/summary.json', 'w') as f:
+    json.dump(summary, f, indent=2, default=str)
 
 print(f"\nFiles saved:")
-print(f"  • {RESULTS_DIR}/q1_extension/consensus_comparison.csv")
-print(f"  • {RESULTS_DIR}/q1_extension/prediction_features.csv")
-print(f"  • {RESULTS_DIR}/q1_extension/feature_importance.csv")
-print(f"  • {RESULTS_DIR}/q1_extension/q1_summary.json")
+print(f"  • {RESULTS_DIR}/extension/consensus_comparison.csv")
+print(f"  • {RESULTS_DIR}/extension/prediction_features.csv")
+print(f"  • {RESULTS_DIR}/extension/feature_importance.csv")
+print(f"  • {RESULTS_DIR}/extension/summary.json")
 print(f"  • {FIGURES_DIR}/fig6_consensus_strategies.png")
 print(f"  • {FIGURES_DIR}/fig7_disagreement_predictors.png")
 print(f"  • {FIGURES_DIR}/fig8_model_pair_analysis.png")

@@ -30,9 +30,9 @@ print("="*70)
 PROJECT_DIR = 'results'
 RESULTS_DIR = os.path.join(PROJECT_DIR, 'results')
 FIGURES_DIR = os.path.join(PROJECT_DIR, 'figures')
-Q1_DIR = os.path.join(RESULTS_DIR, 'q1_upgrade')
+DIR = os.path.join(RESULTS_DIR, 'upgrade')
 
-os.makedirs(Q1_DIR, exist_ok=True)
+os.makedirs(DIR, exist_ok=True)
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
 # Load combined results
@@ -346,11 +346,11 @@ axes[1].set_title('Distribution of SHAP Explanation Agreement\n(When All Models 
 axes[1].legend(loc='upper left')
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig1_explanation_lottery.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig1_explanation_lottery.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig1_explanation_lottery.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig1_explanation_lottery.pdf'), bbox_inches='tight')
 plt.close()
 fig_count += 1
-print(f"   Saved: q1_fig1_explanation_lottery.png")
+print(f"   Saved: fig1_explanation_lottery.png")
 
 # -----------------------------------------------------------------------------
 # FIGURE Q1-2: Tree vs Linear Disagreement
@@ -377,11 +377,11 @@ if len(df_plot) > 0:
     axes[1].set_title('Distribution Shape: Tree vs Linear\n(Linear Models Cause Higher Variance)', fontsize=13, fontweight='bold')
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig2_tree_vs_linear.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig2_tree_vs_linear.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig2_tree_vs_linear.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig2_tree_vs_linear.pdf'), bbox_inches='tight')
 plt.close()
 fig_count += 1
-print(f"   Saved: q1_fig2_tree_vs_linear.png")
+print(f"   Saved: fig2_tree_vs_linear.png")
 
 # -----------------------------------------------------------------------------
 # FIGURE Q1-3: Reliability Score Distribution
@@ -416,11 +416,11 @@ axes[1].text(0.85, 0.05, 'RELIABLE', fontsize=10, color='green', fontweight='bol
 axes[1].text(0.2, 0.35, 'UNRELIABLE', fontsize=10, color='red', fontweight='bold')
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig3_reliability_score.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig3_reliability_score.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig3_reliability_score.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig3_reliability_score.pdf'), bbox_inches='tight')
 plt.close()
 fig_count += 1
-print(f"   Saved: q1_fig3_reliability_score.png")
+print(f"   Saved: fig3_reliability_score.png")
 
 # -----------------------------------------------------------------------------
 # FIGURE Q1-4: Actionable Decision Framework
@@ -499,11 +499,11 @@ ax.text(5, 0.8, stats_text, ha='center', va='center', fontsize=10, style='italic
         bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.5))
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig4_decision_framework.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig4_decision_framework.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig4_decision_framework.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig4_decision_framework.pdf'), bbox_inches='tight')
 plt.close()
 fig_count += 1
-print(f"   Saved: q1_fig4_decision_framework.png")
+print(f"   Saved: fig4_decision_framework.png")
 
 # -----------------------------------------------------------------------------
 # FIGURE Q1-5: Dataset Variability (Supporting)
@@ -526,11 +526,11 @@ ax.axvline(x=0.5, color='orange', linestyle='--', alpha=0.7, label='Moderate (0.
 ax.legend(loc='lower right')
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig5_dataset_variability.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig5_dataset_variability.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig5_dataset_variability.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig5_dataset_variability.pdf'), bbox_inches='tight')
 plt.close()
 fig_count += 1
-print(f"   Saved: q1_fig5_dataset_variability.png")
+print(f"   Saved: fig5_dataset_variability.png")
 
 print(f"\n   Total figures generated: {fig_count}")
 
@@ -538,10 +538,10 @@ print(f"\n   Total figures generated: {fig_count}")
 # SAVE Q1 SUMMARY
 # =============================================================================
 
-q1_summary = {
+summary = {
     'title': 'The Explanation Lottery: When Models Agree But Explanations Don\'t',
     'subtitle': 'And How to Detect It',
-    'version': 'Q1_upgrade_v1.0',
+    'version': 'upgrade_v1.0',
     'completed_at': datetime.now().isoformat(),
     
     'path_a_findings': {
@@ -594,24 +594,24 @@ q1_summary = {
     },
     
     'figures_generated': [
-        'q1_fig1_explanation_lottery.png',
-        'q1_fig2_tree_vs_linear.png', 
-        'q1_fig3_reliability_score.png',
-        'q1_fig4_decision_framework.png',
-        'q1_fig5_dataset_variability.png'
+        'fig1_explanation_lottery.png',
+        'fig2_tree_vs_linear.png', 
+        'fig3_reliability_score.png',
+        'fig4_decision_framework.png',
+        'fig5_dataset_variability.png'
     ],
     
     'target_venues': ['NeurIPS Datasets & Benchmarks', 'ICML', 'FAccT', 'TMLR'],
-    'estimated_q1_probability': '55-65%'
+    'estimated_probability': '55-65%'
 }
 
 # Save summary
-with open(os.path.join(Q1_DIR, 'q1_upgrade_summary.json'), 'w') as f:
-    json.dump(q1_summary, f, indent=2)
-print(f"\n   Saved: q1_upgrade_summary.json")
+with open(os.path.join(DIR, 'upgrade_summary.json'), 'w') as f:
+    json.dump(summary, f, indent=2)
+print(f"\n   Saved: upgrade_summary.json")
 
 # Save instance stats
-instance_stats.to_csv(os.path.join(Q1_DIR, 'instance_reliability_scores.csv'), index=False)
+instance_stats.to_csv(os.path.join(DIR, 'instance_reliability_scores.csv'), index=False)
 print(f"   Saved: instance_reliability_scores.csv")
 
 # =============================================================================
@@ -682,14 +682,14 @@ print("FILES GENERATED")
 print("="*70)
 print(f"""
 FIGURES (in {FIGURES_DIR}/):
-  • q1_fig1_explanation_lottery.png/pdf  - Core finding visualization
-  • q1_fig2_tree_vs_linear.png/pdf       - Model type comparison
-  • q1_fig3_reliability_score.png/pdf    - Proposed metric
-  • q1_fig4_decision_framework.png/pdf   - Actionable guidelines
-  • q1_fig5_dataset_variability.png/pdf  - Dataset analysis
+  • fig1_explanation_lottery.png/pdf  - Core finding visualization
+  • fig2_tree_vs_linear.png/pdf       - Model type comparison
+  • fig3_reliability_score.png/pdf    - Proposed metric
+  • fig4_decision_framework.png/pdf   - Actionable guidelines
+  • fig5_dataset_variability.png/pdf  - Dataset analysis
 
-DATA (in {Q1_DIR}/):
-  • q1_upgrade_summary.json              - Full results summary
+DATA (in {DIR}/):
+  • upgrade_summary.json              - Full results summary
   • instance_reliability_scores.csv      - Per-instance scores
 
 PREVIOUS FIGURES (keep these):
@@ -724,7 +724,7 @@ print("\n" + "="*70)
 print("NEXT STEPS")
 print("="*70)
 print("""
-1. Run this code: python 04_q1_upgrade.py
+1. Run this code: python 04_upgrade.py
 2. Review figures in explanation_lottery/figures/
 3. Write paper following the structure above
 4. Add Related Work section citing:

@@ -330,10 +330,10 @@ axes[1].axvline(x=0.5, color='orange', linestyle='--', alpha=0.7)
 axes[1].axvline(x=0.7, color='green', linestyle='--', alpha=0.7)
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig13_compas.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig13_compas.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig13_compas.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig13_compas.pdf'), bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig13_compas.png")
+print("   Saved: fig13_compas.png")
 
 # Figure 2: COMPAS Feature Importance Comparison
 fig, axes = plt.subplots(1, len(shap_values_dict), figsize=(4*len(shap_values_dict), 5))
@@ -354,10 +354,10 @@ for ax, (name, shap_vals) in zip(axes, shap_values_dict.items()):
 plt.suptitle('COMPAS: Feature Importance by Model\n(Different models → Different explanations)', 
              fontsize=13, fontweight='bold', y=1.02)
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig14_compas_features.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig14_compas_features.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig14_compas_features.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig14_compas_features.pdf'), bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig14_compas_features.png")
+print("   Saved: fig14_compas_features.png")
 
 # =============================================================================
 # COMBINE WITH MAIN RESULTS
@@ -396,9 +396,9 @@ print(f"\n   Saved: compas_shap_agreement.csv")
 
 final_summary = {
     'title': 'The Explanation Lottery: When Models Agree But Explanations Don\'t',
-    'version': 'Q1_FINAL_v1.0',
+    'version': 'FINAL_v1.0',
     'completed_at': datetime.now().isoformat(),
-    'q1_probability': '85-90%',
+    'probability': '85-90%',
     
     'main_study': {
         'datasets': 20,
@@ -428,8 +428,8 @@ final_summary = {
     ),
     
     'figures_generated': [
-        'q1_fig13_compas.png',
-        'q1_fig14_compas_features.png'
+        'fig13_compas.png',
+        'fig14_compas_features.png'
     ],
     
     'total_figures': 14,
@@ -494,18 +494,18 @@ print("="*70)
 print(f"""
 FIGURES ({FIGURES_DIR}/):
   Original (7):
-    • q1_fig1-7 (from earlier runs)
+    • fig1-7 (from earlier runs)
   
   Q1 Upgrade (5):
-    • q1_fig8_high_stakes.png
-    • q1_fig9_ablation.png
-    • q1_fig10_user_framework.png
-    • q1_fig11_lottery_rates.png
-    • q1_fig12_theory.png
+    • fig8_high_stakes.png
+    • fig9_ablation.png
+    • fig10_user_framework.png
+    • fig11_lottery_rates.png
+    • fig12_theory.png
   
   COMPAS (2):
-    • q1_fig13_compas.png
-    • q1_fig14_compas_features.png
+    • fig13_compas.png
+    • fig14_compas_features.png
 
 DATA ({COMPAS_DIR}/):
   • compas_shap_agreement.csv

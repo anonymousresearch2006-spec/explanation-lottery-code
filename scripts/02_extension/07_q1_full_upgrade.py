@@ -35,9 +35,9 @@ print("="*70)
 PROJECT_DIR = 'results'
 RESULTS_DIR = os.path.join(PROJECT_DIR, 'results')
 FIGURES_DIR = os.path.join(PROJECT_DIR, 'figures')
-Q1_FULL_DIR = os.path.join(RESULTS_DIR, 'q1_full_upgrade')
+FULL_DIR = os.path.join(RESULTS_DIR, 'full_upgrade')
 
-os.makedirs(Q1_FULL_DIR, exist_ok=True)
+os.makedirs(FULL_DIR, exist_ok=True)
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
 # Load existing data
@@ -415,10 +415,10 @@ axes[1].axhline(y=0.7, color='green', linestyle='--', alpha=0.5)
 axes[1].axhline(y=0.5, color='orange', linestyle='--', alpha=0.5)
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig8_high_stakes.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig8_high_stakes.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig8_high_stakes.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig8_high_stakes.pdf'), bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig8_high_stakes.png")
+print("   Saved: fig8_high_stakes.png")
 
 # Figure 2: Ablation Study
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -469,10 +469,10 @@ if 'n_features' in df.columns:
     axes[1, 1].legend()
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig9_ablation.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig9_ablation.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig9_ablation.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig9_ablation.pdf'), bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig9_ablation.png")
+print("   Saved: fig9_ablation.png")
 
 # Figure 3: User Decision Framework
 fig, ax = plt.subplots(figsize=(12, 8))
@@ -516,10 +516,10 @@ ax.text(0.5, 0.5, framework_text, transform=ax.transAxes, fontsize=10,
         verticalalignment='center', horizontalalignment='center',
         fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig10_user_framework.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig10_user_framework.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig10_user_framework.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig10_user_framework.pdf'), bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig10_user_framework.png")
+print("   Saved: fig10_user_framework.png")
 
 # Figure 4: Lottery Rate by Threshold
 fig, ax = plt.subplots(figsize=(10, 6))
@@ -546,10 +546,10 @@ ax.annotate(f'τ=0.5: {lottery_rates[0.5]:.1f}%', xy=(0.1, lottery_rates[0.5]+2)
             fontsize=10, color='red')
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig11_lottery_rates.png'), dpi=300, bbox_inches='tight')
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig11_lottery_rates.pdf'), bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig11_lottery_rates.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig11_lottery_rates.pdf'), bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig11_lottery_rates.png")
+print("   Saved: fig11_lottery_rates.png")
 
 # =============================================================================
 # SAVE COMPREHENSIVE Q1 SUMMARY
@@ -559,9 +559,9 @@ print("\n" + "="*70)
 print("SAVING COMPREHENSIVE Q1 SUMMARY")
 print("="*70)
 
-q1_full_summary = {
+full_summary = {
     'title': 'The Explanation Lottery: When Models Agree But Explanations Don\'t',
-    'version': 'Q1_full_upgrade_v1.0',
+    'version': 'full_upgrade_v1.0',
     'completed_at': datetime.now().isoformat(),
     'target_probability': '85-90%',
     
@@ -604,17 +604,17 @@ q1_full_summary = {
     },
     
     'figures_generated': [
-        'q1_fig1_explanation_lottery.png',
-        'q1_fig2_tree_vs_linear.png',
-        'q1_fig3_reliability_score.png',
-        'q1_fig4_decision_framework.png',
-        'q1_fig5_dataset_variability.png',
-        'q1_fig6_tree_vs_linear.png',
-        'q1_fig7_heatmap.png',
-        'q1_fig8_high_stakes.png (NEW)',
-        'q1_fig9_ablation.png (NEW)',
-        'q1_fig10_user_framework.png (NEW)',
-        'q1_fig11_lottery_rates.png (NEW)'
+        'fig1_explanation_lottery.png',
+        'fig2_tree_vs_linear.png',
+        'fig3_reliability_score.png',
+        'fig4_decision_framework.png',
+        'fig5_dataset_variability.png',
+        'fig6_tree_vs_linear.png',
+        'fig7_heatmap.png',
+        'fig8_high_stakes.png (NEW)',
+        'fig9_ablation.png (NEW)',
+        'fig10_user_framework.png (NEW)',
+        'fig11_lottery_rates.png (NEW)'
     ],
     
     'contributions': [
@@ -631,9 +631,9 @@ q1_full_summary = {
     ]
 }
 
-with open(os.path.join(Q1_FULL_DIR, 'q1_full_summary.json'), 'w') as f:
-    json.dump(q1_full_summary, f, indent=2, default=str)
-print("   Saved: q1_full_summary.json")
+with open(os.path.join(FULL_DIR, 'full_summary.json'), 'w') as f:
+    json.dump(full_summary, f, indent=2, default=str)
+print("   Saved: full_summary.json")
 
 # =============================================================================
 # FINAL Q1 ASSESSMENT
@@ -688,13 +688,13 @@ print("FILES GENERATED")
 print("="*70)
 print(f"""
 NEW FIGURES (in {FIGURES_DIR}/):
-  • q1_fig8_high_stakes.png    - High-stakes domain analysis
-  • q1_fig9_ablation.png       - Comprehensive ablation study
-  • q1_fig10_user_framework.png - User decision framework
-  • q1_fig11_lottery_rates.png  - Lottery rate by threshold
+  • fig8_high_stakes.png    - High-stakes domain analysis
+  • fig9_ablation.png       - Comprehensive ablation study
+  • fig10_user_framework.png - User decision framework
+  • fig11_lottery_rates.png  - Lottery rate by threshold
 
-DATA (in {Q1_FULL_DIR}/):
-  • q1_full_summary.json       - Complete Q1 summary
+DATA (in {FULL_DIR}/):
+  • full_summary.json       - Complete Q1 summary
 
 TOTAL FIGURES: 11
 TOTAL DATA FILES: 5+

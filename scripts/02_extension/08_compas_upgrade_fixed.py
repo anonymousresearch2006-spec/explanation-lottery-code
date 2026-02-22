@@ -235,9 +235,9 @@ axes[1].set_title('COMPAS: Agreement by Model Pair', fontsize=13, fontweight='bo
 axes[1].axvline(x=0.7, color='green', linestyle='--', alpha=0.7)
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig13_compas.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig13_compas.png'), dpi=300, bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig13_compas.png")
+print("   Saved: fig13_compas.png")
 
 # Figure 14: Feature Importance (FIXED)
 n_models = len(shap_dict)
@@ -263,9 +263,9 @@ for ax, (name, sv) in zip(axes, shap_dict.items()):
 
 plt.suptitle('COMPAS: Feature Importance Varies by Model', fontsize=13, fontweight='bold', y=1.02)
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig14_compas_features.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig14_compas_features.png'), dpi=300, bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig14_compas_features.png")
+print("   Saved: fig14_compas_features.png")
 
 # =============================================================================
 # SAVE RESULTS

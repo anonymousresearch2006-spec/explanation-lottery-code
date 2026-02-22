@@ -232,7 +232,7 @@ print("  Saved: fig7_summary.png")
 
 # ============== SAVE Q1 FINDINGS ==============
 
-q1_findings = {
+findings = {
     'title': 'The Explanation Lottery: Consensus SHAP for Reliable Explanations',
     'problem': 'Single-model SHAP explanations are unreliable',
     'solution': 'Consensus SHAP - average across tree models',
@@ -251,11 +251,11 @@ q1_findings = {
         'Flag instances with high variance (std > 0.3)',
         'Regulatory compliance requires ensemble explanations'
     ],
-    'q1_contribution': 'Not just benchmark, but actionable solution with regulatory implications'
+    'contribution': 'Not just benchmark, but actionable solution with regulatory implications'
 }
 
-with open('results/q1_findings.json', 'w') as f:
-    json.dump(q1_findings, f, indent=2)
+with open('results/findings.json', 'w') as f:
+    json.dump(findings, f, indent=2)
 
 print("\n" + "="*70)
 print("Q1 EXTENSION COMPLETE!")
@@ -263,7 +263,7 @@ print("="*70)
 print(f"\nNew files:")
 print(f"  • {FIGURES_DIR}/fig6_consensus_shap.png")
 print(f"  • {FIGURES_DIR}/fig7_summary.png")
-print(f"  • results/q1_findings.json")
+print(f"  • results/findings.json")
 print("\n" + "="*70)
 print("Q1 PAPER STRUCTURE:")
 print("="*70)

@@ -140,7 +140,7 @@ if 'pair_type' in df.columns:
         }
         
         import json
-        with open('results/q1_upgrade/tree_vs_linear.json', 'w') as f:
+        with open('results/upgrade/tree_vs_linear.json', 'w') as f:
             json.dump(key_finding, f, indent=2)
         print("\nSaved: tree_vs_linear.json")
 

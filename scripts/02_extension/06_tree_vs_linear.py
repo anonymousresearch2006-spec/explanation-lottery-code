@@ -133,7 +133,7 @@ print("GENERATING FIGURES")
 print("="*60)
 
 os.makedirs('explanation_lottery/figures', exist_ok=True)
-os.makedirs('results/q1_upgrade', exist_ok=True)
+os.makedirs('results/upgrade', exist_ok=True)
 
 # Figure 1: Box plot comparison
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -174,10 +174,10 @@ if len(df_plot) > 0:
     axes[1].axvline(x=0.5, color='orange', linestyle='--', alpha=0.5)
 
 plt.tight_layout()
-plt.savefig('explanation_lottery/figures/q1_fig6_tree_vs_linear.png', dpi=300, bbox_inches='tight')
-plt.savefig('explanation_lottery/figures/q1_fig6_tree_vs_linear.pdf', bbox_inches='tight')
+plt.savefig('explanation_lottery/figures/fig6_tree_vs_linear.png', dpi=300, bbox_inches='tight')
+plt.savefig('explanation_lottery/figures/fig6_tree_vs_linear.pdf', bbox_inches='tight')
 plt.close()
-print("Saved: q1_fig6_tree_vs_linear.png")
+print("Saved: fig6_tree_vs_linear.png")
 
 # Figure 2: Heatmap
 models = ['xgboost', 'lightgbm', 'catboost', 'random_forest', 'logistic_regression']
@@ -199,10 +199,10 @@ ax.set_title('SHAP Explanation Agreement Matrix\n(1.0 on diagonal = same model)'
              fontsize=13, fontweight='bold')
 plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
-plt.savefig('explanation_lottery/figures/q1_fig7_heatmap.png', dpi=300, bbox_inches='tight')
-plt.savefig('explanation_lottery/figures/q1_fig7_heatmap.pdf', bbox_inches='tight')
+plt.savefig('explanation_lottery/figures/fig7_heatmap.png', dpi=300, bbox_inches='tight')
+plt.savefig('explanation_lottery/figures/fig7_heatmap.pdf', bbox_inches='tight')
 plt.close()
-print("Saved: q1_fig7_heatmap.png")
+print("Saved: fig7_heatmap.png")
 
 # Save results
 results = {
@@ -222,7 +222,7 @@ results = {
     'model_pairs': pair_stats.to_dict('index')
 }
 
-with open('results/q1_upgrade/tree_vs_linear.json', 'w') as f:
+with open('results/upgrade/tree_vs_linear.json', 'w') as f:
     json.dump(results, f, indent=2, default=str)
 print("Saved: tree_vs_linear.json")
 

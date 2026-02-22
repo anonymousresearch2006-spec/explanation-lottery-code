@@ -442,11 +442,11 @@ ax4.set_title('Theorem 5: Reliability Distribution\nCoverage guarantee for filte
 ax4.legend()
 
 plt.tight_layout()
-plt.savefig(FIGURES_DIR / 'q1_fig18_theoretical_framework.png', dpi=300, bbox_inches='tight')
-plt.savefig(FIGURES_DIR / 'q1_fig18_theoretical_framework.pdf', bbox_inches='tight')
+plt.savefig(FIGURES_DIR / 'fig18_theoretical_framework.png', dpi=300, bbox_inches='tight')
+plt.savefig(FIGURES_DIR / 'fig18_theoretical_framework.pdf', bbox_inches='tight')
 plt.close()
 
-print(f"Saved: {FIGURES_DIR / 'q1_fig18_theoretical_framework.png'}")
+print(f"Saved: {FIGURES_DIR / 'fig18_theoretical_framework.png'}")
 
 #######################################################################
 # FINAL SUMMARY
@@ -477,7 +477,7 @@ THEOREM 5: Reliability Guarantees
 
 FILES GENERATED:
   - theoretical_framework.json
-  - q1_fig18_theoretical_framework.png/pdf
+  - fig18_theoretical_framework.png/pdf
 
 Q1 PROBABILITY: 85-92%
 """)

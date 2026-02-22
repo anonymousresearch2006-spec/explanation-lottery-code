@@ -459,9 +459,9 @@ if 'n_features' in df.columns:
     ax.legend()
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig15_theory_geometry.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig15_theory_geometry.png'), dpi=300, bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig15_theory_geometry.png")
+print("   Saved: fig15_theory_geometry.png")
 
 # Figure 2: Causal Model Visualization
 fig, ax = plt.subplots(figsize=(12, 8))
@@ -510,9 +510,9 @@ ax.text(0.5, 0.5, causal_diagram, transform=ax.transAxes, fontsize=10,
         verticalalignment='center', horizontalalignment='center',
         fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.9))
 
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig16_causal_model.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig16_causal_model.png'), dpi=300, bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig16_causal_model.png")
+print("   Saved: fig16_causal_model.png")
 
 # Figure 3: Rashomon vs Lottery Distinction
 fig, ax = plt.subplots(figsize=(14, 6))
@@ -563,9 +563,9 @@ ax.text(0.5, 0.5, distinction_text, transform=ax.transAxes, fontsize=9,
         verticalalignment='center', horizontalalignment='center',
         fontfamily='monospace', bbox=dict(boxstyle='round', facecolor='lightcyan', alpha=0.9))
 
-plt.savefig(os.path.join(FIGURES_DIR, 'q1_fig17_rashomon_distinction.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(FIGURES_DIR, 'fig17_rashomon_distinction.png'), dpi=300, bbox_inches='tight')
 plt.close()
-print("   Saved: q1_fig17_rashomon_distinction.png")
+print("   Saved: fig17_rashomon_distinction.png")
 
 # =============================================================================
 # SAVE THEORETICAL SUMMARY

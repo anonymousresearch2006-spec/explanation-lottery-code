@@ -131,8 +131,8 @@ if len(tree_tree) > 0 and len(tree_linear) > 0:
                                 for pair, row in model_pair_stats.iterrows()}
     }
     
-    os.makedirs('results/q1_upgrade', exist_ok=True)
-    with open('results/q1_upgrade/tree_vs_linear_analysis.json', 'w') as f:
+    os.makedirs('results/upgrade', exist_ok=True)
+    with open('results/upgrade/tree_vs_linear_analysis.json', 'w') as f:
         json.dump(findings, f, indent=2)
     print("\nSaved: tree_vs_linear_analysis.json")
 
@@ -186,10 +186,10 @@ axes[1].axvline(x=0.7, color='green', linestyle='--', alpha=0.5)
 axes[1].axvline(x=0.5, color='orange', linestyle='--', alpha=0.5)
 
 plt.tight_layout()
-plt.savefig('explanation_lottery/figures/q1_fig6_model_pair_detail.png', dpi=300, bbox_inches='tight')
-plt.savefig('explanation_lottery/figures/q1_fig6_model_pair_detail.pdf', bbox_inches='tight')
+plt.savefig('explanation_lottery/figures/fig6_model_pair_detail.png', dpi=300, bbox_inches='tight')
+plt.savefig('explanation_lottery/figures/fig6_model_pair_detail.pdf', bbox_inches='tight')
 plt.close()
-print("Saved: q1_fig6_model_pair_detail.png")
+print("Saved: fig6_model_pair_detail.png")
 
 # Heatmap of model pairs
 print("\nGenerating agreement heatmap...")
@@ -227,10 +227,10 @@ plt.xticks(rotation=45, ha='right')
 plt.yticks(rotation=0)
 
 plt.tight_layout()
-plt.savefig('explanation_lottery/figures/q1_fig7_agreement_heatmap.png', dpi=300, bbox_inches='tight')
-plt.savefig('explanation_lottery/figures/q1_fig7_agreement_heatmap.pdf', bbox_inches='tight')
+plt.savefig('explanation_lottery/figures/fig7_agreement_heatmap.png', dpi=300, bbox_inches='tight')
+plt.savefig('explanation_lottery/figures/fig7_agreement_heatmap.pdf', bbox_inches='tight')
 plt.close()
-print("Saved: q1_fig7_agreement_heatmap.png")
+print("Saved: fig7_agreement_heatmap.png")
 
 # Final summary
 print("\n" + "="*60)
@@ -265,9 +265,9 @@ print("\n" + "="*60)
 print("FILES GENERATED")
 print("="*60)
 print("""
-  • results/q1_upgrade/tree_vs_linear_analysis.json
-  • explanation_lottery/figures/q1_fig6_model_pair_detail.png
-  • explanation_lottery/figures/q1_fig7_agreement_heatmap.png
+  • results/upgrade/tree_vs_linear_analysis.json
+  • explanation_lottery/figures/fig6_model_pair_detail.png
+  • explanation_lottery/figures/fig7_agreement_heatmap.png
 """)
 
 print("\n" + "="*60)
