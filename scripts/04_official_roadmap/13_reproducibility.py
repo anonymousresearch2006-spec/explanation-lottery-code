@@ -190,25 +190,25 @@ Running Experiments (in order):
   python 02_session2.py
   
   # Optimised analysis suite
-  python 01_optimised_001_novelty_surprise.py
-  python 02_optimised_001_tone_down_claims.py
-  python 03_optimised_001_design_choices.py
-  python 04_optimised_001_synthetic_ground_truth.py
-  python 05_optimised_001_dataset_level_analysis.py
-  python 06_optimised_001_contribution_positioning.py
-  python 07_optimised_001_reduce_overclaims.py
-  python 08_optimised_001_related_work.py
-  python 09_optimised_001_limitations.py
-  python 10_optimised_001_mnist_experiment.py
-  python 11_optimised_001_reliability_score.py
-  python 12_optimised_001_figures_visualization.py
-  python 13_optimised_001_reproducibility.py
+  python 01novelty_surprise.py
+  python 02tone_down_claims.py
+  python 03design_choices.py
+  python 04synthetic_ground_truth.py
+  python 05dataset_level_analysis.py
+  python 06contribution_positioning.py
+  python 07reduce_overclaims.py
+  python 08related_work.py
+  python 09limitations.py
+  python 10mnist_experiment.py
+  python 11reliability_score.py
+  python 12figures_visualization.py
+  python 13reproducibility.py
   
   # Optional (Tier C)
-  python 14_optimised_001_theoretical_deep.py
-  python 15_optimised_001_extra_datasets.py
-  python 16_optimised_001_compas_legal.py
-  python 17_optimised_001_model_expansion.py
+  python 14theoretical_deep.py
+  python 15extra_datasets.py
+  python 16compas_legal.py
+  python 17model_expansion.py
 
 Expected Runtime:
   - Tier A (01-09): ~2-4 hours total
