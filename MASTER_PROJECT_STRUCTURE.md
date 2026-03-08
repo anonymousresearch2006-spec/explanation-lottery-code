@@ -38,6 +38,7 @@ Contains all executable research code organized by development phase.
 * **03_rigor_and_proofs/** — Statistical validation and theoretical analysis.
 * **04_official_roadmap/** — Core optimized experiments used to generate manuscript results.
 * **05_infrastructure/** — Execution utilities and orchestration tools.
+* **06_theorem/** — Formal validation of the Explanation Lottery theorem ($\Delta$ computation, same-split proof, and dimensionality effect).
 
 This directory implements the full experimental pipeline.
 

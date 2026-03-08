@@ -17,9 +17,14 @@ ENV/
 # Jupyter
 .ipynb_checkpoints
 
-# IDEs
+# IDEs & System
 .vscode/
 .idea/
+.benchmarks/
+.claude/
+.pytest_cache/
+.DS_Store
+Thumbs.db
 
 # =============================
 # RESULTS POLICY (TMLR Standard)
