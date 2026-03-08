@@ -2,8 +2,14 @@
     "benchmark_agreement": {
         "Tree-Tree": 0.676,
         "Tree-Linear": 0.415,
+        "Tree-LinearSVM": 0.391,
+        "Tree-Ridge": 0.404,
+        "Tree-ElasticNet": 0.466,
         "Tree-MLP": 0.521,
         "Linear-Linear": 0.892,
+        "LinearSVM-LR": 0.829,
+        "Ridge-LR": 0.780,
+        "ElasticNet-LR": 0.760,
         "MLP-MLP": 0.734
     },
     "calibration_stats": {

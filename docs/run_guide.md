@@ -121,8 +121,9 @@ The reproducibility entry point performs the following steps:
 1. Verifies required dependencies and environment configuration.
 2. Validates dataset availability.
 3. Executes the official experimental roadmap (17 experiments).
-4. Generates intermediate outputs and logs.
-5. Aggregates results into standardized output files.
+4. Executes the **Formal Theorem Validation** suite (Phase 06).
+5. Generates intermediate outputs and logs.
+6. Aggregates results into standardized output files.
 
 The full pipeline may require significant computation time depending on system resources.
 

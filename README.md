@@ -66,6 +66,7 @@ requirements.txt      # Environment specification
 - **03_rigor_and_proofs/** — Statistical verification and theoretical analysis.
 - **04_official_roadmap/** — Core optimized experiments used in the manuscript.
 - **05_infrastructure/** — Execution utilities and orchestration tools.
+- **06_theorem/** — Formal validation of the Explanation Lottery theorem.
 
 ### data/
 

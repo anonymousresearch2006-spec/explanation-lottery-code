@@ -100,6 +100,21 @@ for i, script in enumerate(SCRIPTS, 1):
         print(f"  STATUS: ERROR ({e})")
         results_log.append({'script': script, 'status': 'ERROR', 'error': str(e)})
 
+# ─────────────────────────────────────────────────────────────────────────────
+# PHASE 06: THEOREM VALIDATION
+# ─────────────────────────────────────────────────────────────────────────────
+THEOREM_RUNNER = os.path.join(SCRIPTS_ROOT, '06_theorem', 'RUN_THEOREM.py')
+if os.path.exists(THEOREM_RUNNER):
+    print(f"\n{'='*70}")
+    print(f"PHASE 06: RUNNING THEOREM VALIDATION")
+    print(f"{'='*70}")
+    try:
+        start = time.time()
+        subprocess.run([sys.executable, THEOREM_RUNNER], cwd=PROJECT_ROOT, check=True)
+        print(f"  STATUS: SUCCESS ({time.time() - start:.1f}s)")
+    except Exception as e:
+        print(f"  STATUS: FAILED ({e})")
+
 total_elapsed = time.time() - total_start
 
 # Summary

@@ -130,6 +130,18 @@ These scripts coordinate execution across all research phases.
 
 ---
 
+### `06_theorem/`
+
+Formal validation of the **Explanation Lottery** theorem.
+
+Includes:
+* **01_compute_delta.py** — computation of the agreement gap $\Delta$ across all datasets.
+* **02_same_split_proof.py** — controlled experiments proving split-invariance and structural causality.
+* **03_dimensionality_effect.py** — evaluation of dimensionality-driven divergence ($\partial\Delta/\partial d > 0$).
+* **RUN_THEOREM.py** — unified orchestration of the theorem validation suite.
+
+This directory provides the definitive empirical proof for the project's theoretical framework.
+
 ## `/results/` — Experimental Outputs
 
 This directory stores all generated artifacts produced by the experimental pipeline.

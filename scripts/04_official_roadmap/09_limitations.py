@@ -62,7 +62,6 @@ LIMITATIONS = {
         'description': f'We study {len(models)} models from 2 hypothesis classes (tree-based and linear).',
         'models_included': models,
         'models_excluded': ['Neural networks (MLP, TabNet)',
-                           'Support Vector Machines',
                            'K-Nearest Neighbors',
                            'Gaussian Processes',
                            'Ensemble methods beyond bagging/boosting'],
@@ -179,7 +178,7 @@ the disagreement analysis.
 
 Second, we study {len(models)} MODELS from two hypothesis classes
 (tree-based and linear). While these cover the most widely deployed
-algorithms, including neural networks and kernel methods would increase
+algorithms, including neural networks would increase
 coverage of the model landscape.
 
 Third, our use of SHAP AS THE SOLE attribution method is both a

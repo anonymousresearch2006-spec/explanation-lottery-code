@@ -59,6 +59,17 @@ import traceback
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# ============== STEP 2b: UTILS IMPORTS ==============
+_repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+
+from scripts.utils.logging_setup import setup_logging
+from scripts.utils.checkpointing import load_checkpoint, save_checkpoint
+from scripts.utils.data_loading import load_and_preprocess
+from scripts.utils.model_training import train_models, evaluate_models
+from scripts.utils.shap_computation import get_shap_values, find_agreement_instances, compute_agreement_metrics
+
 # ============== STEP 3: SETUP ==============
 PROJECT_DIR = "explanation_lottery"
 RESULTS_DIR = f"{PROJECT_DIR}/results/session2"
@@ -70,16 +81,7 @@ for directory in [RESULTS_DIR, CHECKPOINTS_DIR, LOGS_DIR, FIGURES_DIR]:
     os.makedirs(directory, exist_ok=True)
 
 # Logging
-log_filename = f"{LOGS_DIR}/session2_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(message)s',
-    handlers=[
-        logging.FileHandler(log_filename, encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+logger, log_filename = setup_logging(LOGS_DIR, 'session2')
 
 logger.info("="*70)
 logger.info("THE EXPLANATION LOTTERY - SESSION 2")
@@ -119,282 +121,9 @@ MODEL_NAMES = ['xgboost', 'lightgbm', 'catboost', 'random_forest', 'logistic_reg
 logger.info(f"Datasets: {len(DATASET_IDS)}")
 logger.info(f"Models: {MODEL_NAMES}")
 
-# ============== STEP 5: HELPER FUNCTIONS (SAME AS SESSION 1) ==============
-
-def load_and_preprocess(dataset_id, random_state):
-    try:
-        dataset = openml.datasets.get_dataset(dataset_id, download_data=True)
-        X, y, _, feature_names = dataset.get_data(target=dataset.default_target_attribute)
-        
-        if X is None or y is None:
-            return None, None, None, None, None, None, None
-        
-        X = pd.DataFrame(X, columns=feature_names)
-        y = pd.Series(y, name='target')
-        
-        n_original = len(X)
-        n_features_original = len(feature_names)
-        
-        # Encode categorical
-        categorical_cols = []
-        for col in X.columns:
-            if X[col].dtype == 'object' or X[col].dtype.name == 'category':
-                categorical_cols.append(col)
-                le = LabelEncoder()
-                X[col] = le.fit_transform(X[col].astype(str))
-        
-        X = X.apply(pd.to_numeric, errors='coerce')
-        X = X.fillna(X.median())
-        X = X.replace([np.inf, -np.inf], np.nan).fillna(X.median())
-        
-        # Encode target (handle multiclass by taking first 2 classes)
-        le_target = LabelEncoder()
-        y_encoded = le_target.fit_transform(y.astype(str))
-        n_classes = len(np.unique(y_encoded))
-        
-        # If multiclass, convert to binary (class 0 vs rest)
-        if n_classes > 2:
-            y_encoded = (y_encoded == 0).astype(int)
-            n_classes = 2
-        
-        class_balance = np.min(np.bincount(y_encoded)) / len(y_encoded)
-        
-        # Limit large datasets
-        if len(X) > 10000:
-            np.random.seed(random_state)
-            idx = np.random.choice(len(X), 10000, replace=False)
-            X = X.iloc[idx]
-            y_encoded = y_encoded[idx]
-        
-        X_train, X_test, y_train, y_test = train_test_split(
-            X.values, y_encoded, 
-            test_size=CONFIG['test_size'], 
-            random_state=random_state, 
-            stratify=y_encoded
-        )
-        
-        scaler = StandardScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
-        
-        metadata = {
-            'dataset_id': dataset_id,
-            'dataset_name': dataset.name,
-            'n_instances': n_original,
-            'n_features': n_features_original,
-            'n_categorical': len(categorical_cols),
-            'n_classes': n_classes,
-            'class_balance': round(class_balance, 4),
-            'n_train': len(X_train_scaled),
-            'n_test': len(X_test_scaled)
-        }
-        
-        return X_train_scaled, X_test_scaled, y_train, y_test, list(X.columns), dataset.name, metadata
-    
-    except Exception as e:
-        logger.error(f"Error loading dataset {dataset_id}: {str(e)[:100]}")
-        return None, None, None, None, None, None, None
-
-
-def train_models(X_train, y_train, random_state):
-    models = {}
-    train_times = {}
-    params = CONFIG['model_params']
-    
-    try:
-        start = time.time()
-        model = XGBClassifier(
-            n_estimators=params['n_estimators'], 
-            max_depth=params['max_depth'], 
-            learning_rate=params['learning_rate'],
-            random_state=random_state, 
-            eval_metric='logloss', 
-            verbosity=0
-        )
-        model.fit(X_train, y_train)
-        models['xgboost'] = model
-        train_times['xgboost'] = round(time.time() - start, 2)
-    except Exception as e:
-        logger.warning(f"XGBoost failed: {str(e)[:50]}")
-    
-    try:
-        start = time.time()
-        model = LGBMClassifier(
-            n_estimators=params['n_estimators'], 
-            max_depth=params['max_depth'], 
-            learning_rate=params['learning_rate'],
-            random_state=random_state, 
-            verbose=-1,
-            force_col_wise=True
-        )
-        model.fit(X_train, y_train)
-        models['lightgbm'] = model
-        train_times['lightgbm'] = round(time.time() - start, 2)
-    except Exception as e:
-        logger.warning(f"LightGBM failed: {str(e)[:50]}")
-    
-    try:
-        start = time.time()
-        model = CatBoostClassifier(
-            iterations=params['n_estimators'], 
-            depth=params['max_depth'], 
-            learning_rate=params['learning_rate'],
-            random_seed=random_state, 
-            verbose=False
-        )
-        model.fit(X_train, y_train)
-        models['catboost'] = model
-        train_times['catboost'] = round(time.time() - start, 2)
-    except Exception as e:
-        logger.warning(f"CatBoost failed: {str(e)[:50]}")
-    
-    try:
-        start = time.time()
-        model = RandomForestClassifier(
-            n_estimators=params['n_estimators'], 
-            max_depth=params['max_depth'], 
-            random_state=random_state,
-            n_jobs=-1
-        )
-        model.fit(X_train, y_train)
-        models['random_forest'] = model
-        train_times['random_forest'] = round(time.time() - start, 2)
-    except Exception as e:
-        logger.warning(f"Random Forest failed: {str(e)[:50]}")
-    
-    try:
-        start = time.time()
-        model = LogisticRegression(
-            max_iter=1000, 
-            random_state=random_state,
-            n_jobs=-1,
-            solver='lbfgs'
-        )
-        model.fit(X_train, y_train)
-        models['logistic_regression'] = model
-        train_times['logistic_regression'] = round(time.time() - start, 2)
-    except Exception as e:
-        logger.warning(f"Logistic Regression failed: {str(e)[:50]}")
-    
-    return models, train_times
-
-
-def evaluate_models(models, X_test, y_test):
-    results = {}
-    for name, model in models.items():
-        try:
-            y_pred = model.predict(X_test)
-            y_proba = model.predict_proba(X_test)[:, 1]
-            results[name] = {
-                'accuracy': round(accuracy_score(y_test, y_pred), 4),
-                'auc': round(roc_auc_score(y_test, y_proba), 4)
-            }
-        except:
-            results[name] = {'accuracy': 0.0, 'auc': 0.0}
-    return results
-
-
-def get_shap_values(model, X_explain, X_background, model_name):
-    try:
-        if model_name in ['xgboost', 'lightgbm', 'catboost', 'random_forest']:
-            explainer = shap.TreeExplainer(model)
-            shap_values = explainer.shap_values(X_explain)
-        else:
-            n_background = min(CONFIG['shap_background_samples'], len(X_background))
-            if len(X_background) > n_background:
-                indices = np.random.choice(len(X_background), n_background, replace=False)
-                background_sample = X_background[indices]
-            else:
-                background_sample = X_background
-            explainer = shap.LinearExplainer(model, background_sample)
-            shap_values = explainer.shap_values(X_explain)
-        
-        if isinstance(shap_values, list):
-            shap_values = shap_values[1]
-        if len(shap_values.shape) == 3:
-            shap_values = shap_values[:, :, 1]
-        
-        return np.abs(shap_values)
-    except Exception as e:
-        logger.warning(f"SHAP failed for {model_name}: {str(e)[:50]}")
-        return None
-
-
-def find_agreement_instances(models, X_test, y_test):
-    all_correct = np.ones(len(y_test), dtype=bool)
-    for name, model in models.items():
-        try:
-            preds = model.predict(X_test)
-            all_correct &= (preds == y_test)
-        except:
-            all_correct &= False
-    return np.where(all_correct)[0]
-
-
-def compute_agreement_metrics(shap_dict, instance_idx, n_features):
-    results = []
-    model_names = list(shap_dict.keys())
-    
-    for i, model_a in enumerate(model_names):
-        for model_b in model_names[i+1:]:
-            try:
-                shap_a = shap_dict[model_a][instance_idx]
-                shap_b = shap_dict[model_b][instance_idx]
-                
-                if np.any(np.isnan(shap_a)) or np.any(np.isnan(shap_b)):
-                    continue
-                if np.all(shap_a == 0) or np.all(shap_b == 0):
-                    continue
-                
-                rank_a = np.argsort(np.argsort(-shap_a))
-                rank_b = np.argsort(np.argsort(-shap_b))
-                
-                if len(rank_a) > 1:
-                    spearman_corr, spearman_pval = spearmanr(rank_a, rank_b)
-                else:
-                    spearman_corr, spearman_pval = 1.0, 0.0
-                
-                if np.isnan(spearman_corr):
-                    spearman_corr = 0.0
-                
-                top_k_results = {}
-                for k in CONFIG['top_k_values']:
-                    if n_features >= k:
-                        top_a = set(np.argsort(-shap_a)[:k])
-                        top_b = set(np.argsort(-shap_b)[:k])
-                        overlap = len(top_a & top_b) / k
-                        top_k_results[f'top_{k}_overlap'] = round(overlap, 4)
-                        union = len(top_a | top_b)
-                        jaccard = len(top_a & top_b) / union if union > 0 else 0
-                        top_k_results[f'top_{k}_jaccard'] = round(jaccard, 4)
-                
-                weights = (shap_a + shap_b) / 2
-                weight_sum = weights.sum()
-                if weight_sum > 0:
-                    weights_norm = weights / weight_sum
-                    weighted_corr = np.corrcoef(shap_a * weights_norm, shap_b * weights_norm)[0, 1]
-                    if np.isnan(weighted_corr):
-                        weighted_corr = 0.0
-                else:
-                    weighted_corr = 0.0
-                
-                norm_a = np.linalg.norm(shap_a)
-                norm_b = np.linalg.norm(shap_b)
-                cosine_sim = np.dot(shap_a, shap_b) / (norm_a * norm_b) if norm_a > 0 and norm_b > 0 else 0.0
-                
-                results.append({
-                    'model_a': model_a,
-                    'model_b': model_b,
-                    'spearman': round(spearman_corr, 4),
-                    'spearman_pval': round(spearman_pval, 6) if not np.isnan(spearman_pval) else 1.0,
-                    'weighted_corr': round(weighted_corr, 4),
-                    'cosine_similarity': round(cosine_sim, 4),
-                    **top_k_results
-                })
-            except:
-                continue
-    
-    return results
+# ============== STEP 5: HELPER FUNCTIONS (imported from scripts.utils) ==============
+# load_and_preprocess, train_models, evaluate_models, get_shap_values,
+# find_agreement_instances, compute_agreement_metrics are imported above.
 
 
 # ============== STEP 6: MAIN EXPERIMENT LOOP ==============
@@ -412,20 +141,16 @@ logger.info("="*70)
 
 for dataset_idx, dataset_id in enumerate(DATASET_IDS):
     
-    checkpoint_file = f'{CHECKPOINTS_DIR}/session2_dataset_{dataset_id}.json'
-    
-    if os.path.exists(checkpoint_file):
+    _ckpt_key = f'session2_dataset_{dataset_id}'
+    _ckpt = load_checkpoint(CHECKPOINTS_DIR, _ckpt_key)
+
+    if _ckpt is not None:
         logger.info(f"\n[{dataset_idx+1}/{len(DATASET_IDS)}] Dataset {dataset_id} - SKIPPING (done)")
-        try:
-            with open(checkpoint_file, 'r') as f:
-                checkpoint_data = json.load(f)
-                all_results.extend(checkpoint_data.get('results', []))
-                if checkpoint_data.get('metadata'):
-                    all_metadata.append(checkpoint_data['metadata'])
-                all_model_performance.extend(checkpoint_data.get('model_performance', []))
-                datasets_completed += 1
-        except:
-            pass
+        all_results.extend(_ckpt.get('results', []))
+        if _ckpt.get('metadata'):
+            all_metadata.append(_ckpt['metadata'])
+        all_model_performance.extend(_ckpt.get('model_performance', []))
+        datasets_completed += 1
         continue
     
     logger.info(f"\n{'='*60}")
@@ -526,9 +251,8 @@ for dataset_idx, dataset_id in enumerate(DATASET_IDS):
             'results': dataset_results
         }
         
-        with open(checkpoint_file, 'w') as f:
-            json.dump(checkpoint_data, f)
-        
+        save_checkpoint(CHECKPOINTS_DIR, _ckpt_key, checkpoint_data)
+
         pd.DataFrame(all_results).to_csv(f'{RESULTS_DIR}/intermediate_results.csv', index=False)
         
         datasets_completed += 1

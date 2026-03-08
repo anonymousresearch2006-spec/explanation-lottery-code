@@ -10,7 +10,7 @@ Runs all 3 theorem validation experiments in sequence:
 Produces: results/results/theorem_validation/theorem_summary.json
 
 Usage:
-  cd c:\\Users\\Lenovo\\OneDrive\\Desktop\\explanation_lottery
+  cd /path/to/explanation_lottery
   python scripts/06_theorem/RUN_THEOREM.py
 =============================================================================
 """

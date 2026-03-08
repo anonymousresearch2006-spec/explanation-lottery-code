@@ -29,6 +29,7 @@ import shap
 import json
 import os
 import warnings
+from concurrent.futures import ThreadPoolExecutor, as_completed
 warnings.filterwarnings('ignore')
 
 # Setup
@@ -41,160 +42,158 @@ print("=" * 70)
 print("OPTIMISED_001 -- EXPERIMENT 15: EXTRA DATASETS")
 print("=" * 70)
 
+def _run_digits():
+    """Run the Digits (8x8 images) experiment and return a result dict."""
+    print("\n" + "=" * 70)
+    print("DATASET 1: DIGITS (8x8 images, 64 features)")
+    print("=" * 70)
+    try:
+        digits = load_digits(n_class=2)
+        X_digits = pd.DataFrame(digits.data, columns=[f'pixel_{i}' for i in range(64)])
+        y_digits = pd.Series(digits.target)
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_digits, y_digits, test_size=0.2, random_state=42
+        )
+
+        models = {
+            'rf': RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42),
+            'gb': GradientBoostingClassifier(n_estimators=100, max_depth=4, random_state=42),
+            'lr': LogisticRegression(max_iter=1000, random_state=42),
+        }
+        for name, model in models.items():
+            model.fit(X_train, y_train)
+            acc = accuracy_score(y_test, model.predict(X_test))
+            print(f"  {name}: accuracy = {acc:.4f}")
+
+        preds = {name: model.predict(X_test) for name, model in models.items()}
+        agree = np.all([preds[n] == preds['rf'] for n in preds], axis=0)
+        X_agree = X_test[agree].iloc[:50]
+        print(f"  Agreement instances: {agree.sum()}")
+
+        bg = X_train.sample(n=min(50, len(X_train)), random_state=42)
+        shap_vals = {}
+        for name, model in models.items():
+            try:
+                ex = shap.LinearExplainer(model, bg) if name == 'lr' else shap.TreeExplainer(model)
+                sv = ex.shap_values(X_agree)
+                if isinstance(sv, list):
+                    sv = sv[1]
+                shap_vals[name] = sv
+            except Exception as e:
+                print(f"  {name} SHAP failed: {e}")
+
+        digit_rhos = []
+        model_names = list(shap_vals.keys())
+        for i in range(len(model_names)):
+            for j in range(i + 1, len(model_names)):
+                rhos = [
+                    stats.spearmanr(shap_vals[model_names[i]][k], shap_vals[model_names[j]][k])[0]
+                    for k in range(len(X_agree))
+                ]
+                rhos = [r for r in rhos if not np.isnan(r)]
+                if rhos:
+                    mean_rho = np.mean(rhos)
+                    digit_rhos.extend(rhos)
+                    print(f"  {model_names[i]} vs {model_names[j]}: rho = {mean_rho:.3f}")
+
+        print(f"  Overall: rho = {np.mean(digit_rhos):.3f}, "
+              f"lottery = {np.mean([r < 0.5 for r in digit_rhos]) * 100:.1f}%")
+        return {
+            'mean_rho': float(np.mean(digit_rhos)) if digit_rhos else None,
+            'lottery_rate': float(np.mean([r < 0.5 for r in digit_rhos]) * 100) if digit_rhos else None,
+            'n_instances': len(X_agree),
+            'n_features': 64,
+        }
+    except Exception as e:
+        print(f"  DIGITS experiment failed: {e}")
+        return {'error': str(e)}
+
+
+def _run_text():
+    """Run the 20 Newsgroups (TF-IDF) experiment and return a result dict."""
+    print("\n" + "=" * 70)
+    print("DATASET 2: TEXT DATA (20 Newsgroups, binary, TF-IDF)")
+    print("=" * 70)
+    try:
+        cats = ['sci.space', 'comp.graphics']
+        newsgroups = fetch_20newsgroups(
+            subset='all', categories=cats, remove=('headers', 'footers', 'quotes')
+        )
+        vectorizer = TfidfVectorizer(max_features=100, stop_words='english')
+        X_text = vectorizer.fit_transform(newsgroups.data).toarray()
+        y_text = newsgroups.target
+        feature_names = vectorizer.get_feature_names_out()
+        X_text_df = pd.DataFrame(X_text, columns=feature_names)
+        y_text_s = pd.Series(y_text)
+        print(f"  Samples: {len(X_text_df)}, Features: {X_text_df.shape[1]}")
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_text_df, y_text_s, test_size=0.2, random_state=42
+        )
+
+        models = {
+            'rf': RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42),
+            'gb': GradientBoostingClassifier(n_estimators=100, max_depth=4, random_state=42),
+            'lr': LogisticRegression(max_iter=1000, random_state=42),
+        }
+        for name, model in models.items():
+            model.fit(X_train, y_train)
+            acc = accuracy_score(y_test, model.predict(X_test))
+            print(f"  {name}: accuracy = {acc:.4f}")
+
+        preds = {name: model.predict(X_test) for name, model in models.items()}
+        agree = np.all([preds[n] == preds['rf'] for n in preds], axis=0)
+        X_agree = X_test[agree].iloc[:50]
+        print(f"  Agreement instances: {agree.sum()}")
+
+        bg = X_train.sample(n=min(50, len(X_train)), random_state=42)
+        shap_vals = {}
+        for name, model in models.items():
+            try:
+                ex = shap.LinearExplainer(model, bg) if name == 'lr' else shap.TreeExplainer(model)
+                sv = ex.shap_values(X_agree)
+                if isinstance(sv, list):
+                    sv = sv[1]
+                shap_vals[name] = sv
+            except Exception as e:
+                print(f"  {name} SHAP failed: {e}")
+
+        text_rhos = []
+        model_names = list(shap_vals.keys())
+        for i in range(len(model_names)):
+            for j in range(i + 1, len(model_names)):
+                rhos = [
+                    stats.spearmanr(shap_vals[model_names[i]][k], shap_vals[model_names[j]][k])[0]
+                    for k in range(len(X_agree))
+                ]
+                rhos = [r for r in rhos if not np.isnan(r)]
+                if rhos:
+                    mean_rho = np.mean(rhos)
+                    text_rhos.extend(rhos)
+                    print(f"  {model_names[i]} vs {model_names[j]}: rho = {mean_rho:.3f}")
+
+        print(f"  Overall: rho = {np.mean(text_rhos):.3f}, "
+              f"lottery = {np.mean([r < 0.5 for r in text_rhos]) * 100:.1f}%")
+        return {
+            'mean_rho': float(np.mean(text_rhos)) if text_rhos else None,
+            'lottery_rate': float(np.mean([r < 0.5 for r in text_rhos]) * 100) if text_rhos else None,
+            'n_instances': len(X_agree),
+            'n_features': 100,
+        }
+    except Exception as e:
+        print(f"  TEXT experiment failed: {e}")
+        return {'error': str(e)}
+
+
+# Run digits and text datasets in parallel
 all_results = {}
 
-# =============================================================================
-# DATASET 1: DIGITS (8x8 images -- like mini-MNIST)
-# =============================================================================
-print("\n" + "=" * 70)
-print("DATASET 1: DIGITS (8x8 images, 64 features)")
-print("=" * 70)
-
-try:
-    digits = load_digits(n_class=2)  # Binary: 0 vs 1
-    X_digits = pd.DataFrame(digits.data, columns=[f'pixel_{i}' for i in range(64)])
-    y_digits = pd.Series(digits.target)
-    
-    X_train, X_test, y_train, y_test = train_test_split(X_digits, y_digits, test_size=0.2, random_state=42)
-    
-    models = {
-        'rf': RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42),
-        'gb': GradientBoostingClassifier(n_estimators=100, max_depth=4, random_state=42),
-        'lr': LogisticRegression(max_iter=1000, random_state=42)
-    }
-    
-    for name, model in models.items():
-        model.fit(X_train, y_train)
-        acc = accuracy_score(y_test, model.predict(X_test))
-        print(f"  {name}: accuracy = {acc:.4f}")
-    
-    # Agreement instances
-    preds = {name: model.predict(X_test) for name, model in models.items()}
-    agree = np.all([preds[n] == preds['rf'] for n in preds], axis=0)
-    X_agree = X_test[agree].iloc[:50]
-    print(f"  Agreement instances: {agree.sum()}")
-    
-    # SHAP
-    bg = X_train.sample(n=min(50, len(X_train)), random_state=42)
-    shap_vals = {}
-    for name, model in models.items():
-        try:
-            if name == 'lr':
-                ex = shap.LinearExplainer(model, bg)
-            else:
-                ex = shap.TreeExplainer(model)
-            sv = ex.shap_values(X_agree)
-            if isinstance(sv, list):
-                sv = sv[1]
-            shap_vals[name] = sv
-        except Exception as e:
-            print(f"  {name} SHAP failed: {e}")
-    
-    # Pairwise agreement
-    digit_rhos = []
-    model_names = list(shap_vals.keys())
-    for i in range(len(model_names)):
-        for j in range(i+1, len(model_names)):
-            rhos = [stats.spearmanr(shap_vals[model_names[i]][k], shap_vals[model_names[j]][k])[0] 
-                    for k in range(len(X_agree))]
-            rhos = [r for r in rhos if not np.isnan(r)]
-            if rhos:
-                mean_rho = np.mean(rhos)
-                digit_rhos.extend(rhos)
-                print(f"  {model_names[i]} vs {model_names[j]}: rho = {mean_rho:.3f}")
-    
-    all_results['digits'] = {
-        'mean_rho': float(np.mean(digit_rhos)) if digit_rhos else None,
-        'lottery_rate': float(np.mean([r < 0.5 for r in digit_rhos]) * 100) if digit_rhos else None,
-        'n_instances': len(X_agree),
-        'n_features': 64
-    }
-    print(f"  Overall: rho = {np.mean(digit_rhos):.3f}, lottery = {np.mean([r<0.5 for r in digit_rhos])*100:.1f}%")
-
-except Exception as e:
-    print(f"  DIGITS experiment failed: {e}")
-    all_results['digits'] = {'error': str(e)}
-
-# =============================================================================
-# DATASET 2: TEXT DATA (20 Newsgroups, TF-IDF features)
-# =============================================================================
-print("\n" + "=" * 70)
-print("DATASET 2: TEXT DATA (20 Newsgroups, binary, TF-IDF)")
-print("=" * 70)
-
-try:
-    # Binary: sci.space vs comp.graphics
-    cats = ['sci.space', 'comp.graphics']
-    newsgroups = fetch_20newsgroups(subset='all', categories=cats, remove=('headers', 'footers', 'quotes'))
-    
-    vectorizer = TfidfVectorizer(max_features=100, stop_words='english')
-    X_text = vectorizer.fit_transform(newsgroups.data).toarray()
-    y_text = newsgroups.target
-    
-    feature_names = vectorizer.get_feature_names_out()
-    X_text_df = pd.DataFrame(X_text, columns=feature_names)
-    y_text_s = pd.Series(y_text)
-    
-    print(f"  Samples: {len(X_text_df)}, Features: {X_text_df.shape[1]}")
-    
-    X_train, X_test, y_train, y_test = train_test_split(X_text_df, y_text_s, test_size=0.2, random_state=42)
-    
-    models = {
-        'rf': RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42),
-        'gb': GradientBoostingClassifier(n_estimators=100, max_depth=4, random_state=42),
-        'lr': LogisticRegression(max_iter=1000, random_state=42)
-    }
-    
-    for name, model in models.items():
-        model.fit(X_train, y_train)
-        acc = accuracy_score(y_test, model.predict(X_test))
-        print(f"  {name}: accuracy = {acc:.4f}")
-    
-    # Agreement
-    preds = {name: model.predict(X_test) for name, model in models.items()}
-    agree = np.all([preds[n] == preds['rf'] for n in preds], axis=0)
-    X_agree = X_test[agree].iloc[:50]
-    print(f"  Agreement instances: {agree.sum()}")
-    
-    # SHAP
-    bg = X_train.sample(n=min(50, len(X_train)), random_state=42)
-    shap_vals = {}
-    for name, model in models.items():
-        try:
-            if name == 'lr':
-                ex = shap.LinearExplainer(model, bg)
-            else:
-                ex = shap.TreeExplainer(model)
-            sv = ex.shap_values(X_agree)
-            if isinstance(sv, list):
-                sv = sv[1]
-            shap_vals[name] = sv
-        except Exception as e:
-            print(f"  {name} SHAP failed: {e}")
-    
-    text_rhos = []
-    model_names = list(shap_vals.keys())
-    for i in range(len(model_names)):
-        for j in range(i+1, len(model_names)):
-            rhos = [stats.spearmanr(shap_vals[model_names[i]][k], shap_vals[model_names[j]][k])[0]
-                    for k in range(len(X_agree))]
-            rhos = [r for r in rhos if not np.isnan(r)]
-            if rhos:
-                mean_rho = np.mean(rhos)
-                text_rhos.extend(rhos)
-                print(f"  {model_names[i]} vs {model_names[j]}: rho = {mean_rho:.3f}")
-    
-    all_results['text_newsgroups'] = {
-        'mean_rho': float(np.mean(text_rhos)) if text_rhos else None,
-        'lottery_rate': float(np.mean([r < 0.5 for r in text_rhos]) * 100) if text_rhos else None,
-        'n_instances': len(X_agree),
-        'n_features': 100
-    }
-    print(f"  Overall: rho = {np.mean(text_rhos):.3f}, lottery = {np.mean([r<0.5 for r in text_rhos])*100:.1f}%")
-
-except Exception as e:
-    print(f"  TEXT experiment failed: {e}")
-    all_results['text_newsgroups'] = {'error': str(e)}
+with ThreadPoolExecutor(max_workers=2) as executor:
+    digits_future = executor.submit(_run_digits)
+    text_future = executor.submit(_run_text)
+    all_results['digits'] = digits_future.result()
+    all_results['text_newsgroups'] = text_future.result()
 
 # =============================================================================
 # COMPARISON WITH TABULAR

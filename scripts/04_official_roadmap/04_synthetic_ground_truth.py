@@ -28,6 +28,7 @@ import shap
 import json
 import os
 import warnings
+from multiprocessing import Pool, cpu_count
 warnings.filterwarnings('ignore')
 
 # Setup
@@ -135,222 +136,285 @@ def compute_shap_accuracy(shap_values, true_importances, n_features):
 
 
 # =============================================================================
-# MAIN EXPERIMENT
+# PER-SEED WORKER  (module-level so it is picklable for multiprocessing)
 # =============================================================================
-all_results = {}
 
-for scenario_key, scenario_info in SCENARIOS.items():
-    print(f"\n{'='*70}")
-    print(f"SCENARIO: {scenario_info['name']}")
-    print(f"  {scenario_info['description']}")
-    print(f"  Expected agreement: {scenario_info['expected_agreement']}")
-    print(f"{'='*70}")
-    
-    scenario_results = {
-        'info': scenario_info,
-        'seeds': {}
+def run_scenario_seed(scenario_key, seed):
+    """
+    Run one (scenario, seed) combination and return a structured result dict.
+    Called by multiprocessing.Pool.starmap.
+    """
+    import warnings
+    warnings.filterwarnings('ignore')
+
+    scenario_info = SCENARIOS[scenario_key]
+    print(f"\n  [{scenario_key}] Seed {seed}:")
+
+    X, y = generate_synthetic_data(scenario_key, random_state=seed)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=seed
+    )
+
+    models = {
+        'rf': RandomForestClassifier(n_estimators=100, max_depth=6, random_state=seed),
+        'gb': GradientBoostingClassifier(n_estimators=100, max_depth=4, random_state=seed),
+        'lr': LogisticRegression(max_iter=1000, random_state=seed),
     }
-    
-    seed_agreements = []
-    seed_accuracies = {'rf': [], 'gb': [], 'lr': []}
-    seed_shap_accuracies = {'rf': [], 'gb': [], 'lr': []}
-    
-    for seed in [42, 123, 456]:
-        print(f"\n  Seed {seed}:")
-        
-        X, y = generate_synthetic_data(scenario_key, random_state=seed)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
-        
-        # Train models
-        models = {
-            'rf': RandomForestClassifier(n_estimators=100, max_depth=6, random_state=seed),
-            'gb': GradientBoostingClassifier(n_estimators=100, max_depth=4, random_state=seed),
-            'lr': LogisticRegression(max_iter=1000, random_state=seed)
-        }
-        
-        for name, model in models.items():
-            model.fit(X_train, y_train)
-            acc = accuracy_score(y_test, model.predict(X_test))
-            seed_accuracies[name].append(acc)
-            print(f"    {name}: accuracy = {acc:.3f}")
-        
-        # Find prediction agreement instances
-        preds = {}
-        for name, model in models.items():
-            preds[name] = model.predict(X_test)
-        
-        agree_mask = (preds['rf'] == preds['gb']) & (preds['gb'] == preds['lr'])
-        X_agree = X_test[agree_mask].iloc[:50]  # up to 50 agreed instances
-        
-        if len(X_agree) < 5:
-            print(f"    [!WARN!] Only {len(X_agree)} agreement instances, skipping")
-            continue
-        
-        print(f"    Agreement instances: {len(X_agree)}")
-        
-        # Compute SHAP values
-        shap_values = {}
-        bg = X_train.sample(n=min(100, len(X_train)), random_state=seed)
-        
-        for name, model in models.items():
-            try:
-                if name == 'lr':
-                    explainer = shap.LinearExplainer(model, bg)
-                else:
-                    explainer = shap.TreeExplainer(model)
-                sv = explainer.shap_values(X_agree)
-                if isinstance(sv, list):
-                    sv = sv[1]
-                if len(getattr(sv, 'shape', [])) == 3:
-                    sv = sv[:, :, 1]  # class 1
-                shap_values[name] = sv
-                
-                # SHAP vs ground truth
-                acc_result = compute_shap_accuracy(sv, scenario_info['true_importances'], X.shape[1])
-                seed_shap_accuracies[name].append(acc_result['spearman_with_truth'])
-                print(f"    {name} SHAP vs truth: rho = {acc_result['spearman_with_truth']:.3f}, top-K = {acc_result['topk_overlap']:.2f}")
-            except Exception as e:
-                print(f"    {name} SHAP failed: {e}")
-                continue
-        
-        # Compute pairwise explanation agreement
-        model_names = list(shap_values.keys())
-        pair_agreements = []
-        
-        for i in range(len(model_names)):
-            for j in range(i+1, len(model_names)):
-                m_a, m_b = model_names[i], model_names[j]
-                instance_rhos = []
-                for idx in range(len(X_agree)):
-                    rho, _ = stats.spearmanr(shap_values[m_a][idx], shap_values[m_b][idx])
-                    if not np.any(np.isnan(np.atleast_1d(rho))):
-                        instance_rhos.append(rho)
-                
-                if instance_rhos:
-                    mean_rho = np.mean(instance_rhos)
-                    pair_agreements.append({
-                        'pair': f'{m_a}-{m_b}',
-                        'mean_rho': float(mean_rho),
-                        'std_rho': float(np.std(instance_rhos)),
-                        'n_instances': len(instance_rhos)
-                    })
-                    print(f"    {m_a} vs {m_b}: rho = {mean_rho:.3f}")
-        
-        if pair_agreements:
-            overall_agreement = np.mean([p['mean_rho'] for p in pair_agreements])
-            seed_agreements.append(overall_agreement)
-        
-        scenario_results['seeds'][str(seed)] = {
+
+    model_accs = {}
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        acc = accuracy_score(y_test, model.predict(X_test))
+        model_accs[name] = acc
+        print(f"    {name}: accuracy = {acc:.3f}")
+
+    preds = {name: model.predict(X_test) for name, model in models.items()}
+    agree_mask = (preds['rf'] == preds['gb']) & (preds['gb'] == preds['lr'])
+    X_agree = X_test[agree_mask].iloc[:50]
+
+    if len(X_agree) < 5:
+        print(f"    [!WARN!] Only {len(X_agree)} agreement instances, skipping")
+        return {
+            'scenario_key': scenario_key,
+            'seed': seed,
+            'skipped': True,
+            'model_accs': model_accs,
+            'shap_accs': {},
+            'pair_agreements': [],
+            'overall_agreement': None,
             'n_agree_instances': len(X_agree),
-            'pair_agreements': pair_agreements
         }
-    
-    # Scenario summary
-    if seed_agreements:
-        mean_agreement = np.mean(seed_agreements)
-        std_agreement = np.std(seed_agreements)
-        
-        print(f"\n  SCENARIO SUMMARY: {scenario_info['name']}")
-        print(f"    Mean agreement:   rho = {mean_agreement:.3f} +/- {std_agreement:.3f}")
-        print(f"    Expected:         {scenario_info['expected_agreement']}")
-        
-        # Check if prediction matches expectation
-        if scenario_info['expected_agreement'] == 'high' and mean_agreement > 0.5:
-            print(f"    Validation:       [OK] MATCHES EXPECTATION")
-        elif scenario_info['expected_agreement'] == 'low' and mean_agreement < 0.5:
-            print(f"    Validation:       [OK] MATCHES EXPECTATION")
-        elif scenario_info['expected_agreement'] == 'medium':
-            print(f"    Validation:       ~ MIXED (as expected)")
-        else:
-            print(f"    Validation:       [FAIL] DOES NOT MATCH (interesting!)")
-        
-        scenario_results['summary'] = {
-            'mean_agreement': float(mean_agreement),
-            'std_agreement': float(std_agreement),
-            'expected': scenario_info['expected_agreement'],
-            'model_accuracies': {k: float(np.mean(v)) for k, v in seed_accuracies.items()},
-            'shap_vs_truth': {k: float(np.mean(v)) if v else None for k, v in seed_shap_accuracies.items()}
-        }
-    
-    all_results[scenario_key] = scenario_results
+
+    print(f"    Agreement instances: {len(X_agree)}")
+
+    shap_values = {}
+    bg = X_train.sample(n=min(100, len(X_train)), random_state=seed)
+    shap_accs = {}
+
+    for name, model in models.items():
+        try:
+            if name == 'lr':
+                explainer = shap.LinearExplainer(model, bg)
+            else:
+                explainer = shap.TreeExplainer(model)
+            sv = explainer.shap_values(X_agree)
+            if isinstance(sv, list):
+                sv = sv[1]
+            if len(getattr(sv, 'shape', [])) == 3:
+                sv = sv[:, :, 1]
+            shap_values[name] = sv
+
+            acc_result = compute_shap_accuracy(sv, scenario_info['true_importances'], X.shape[1])
+            shap_accs[name] = acc_result['spearman_with_truth']
+            print(f"    {name} SHAP vs truth: rho = {acc_result['spearman_with_truth']:.3f}, "
+                  f"top-K = {acc_result['topk_overlap']:.2f}")
+        except Exception as e:
+            print(f"    {name} SHAP failed: {e}")
+
+    model_names = list(shap_values.keys())
+    pair_agreements = []
+
+    for i in range(len(model_names)):
+        for j in range(i + 1, len(model_names)):
+            m_a, m_b = model_names[i], model_names[j]
+            instance_rhos = []
+            for idx in range(len(X_agree)):
+                rho, _ = stats.spearmanr(shap_values[m_a][idx], shap_values[m_b][idx])
+                if not np.any(np.isnan(np.atleast_1d(rho))):
+                    instance_rhos.append(rho)
+            if instance_rhos:
+                mean_rho = float(np.mean(instance_rhos))
+                pair_agreements.append({
+                    'pair': f'{m_a}-{m_b}',
+                    'mean_rho': mean_rho,
+                    'std_rho': float(np.std(instance_rhos)),
+                    'n_instances': len(instance_rhos),
+                })
+                print(f"    {m_a} vs {m_b}: rho = {mean_rho:.3f}")
+
+    overall_agreement = (
+        float(np.mean([p['mean_rho'] for p in pair_agreements]))
+        if pair_agreements else None
+    )
+
+    return {
+        'scenario_key': scenario_key,
+        'seed': seed,
+        'skipped': False,
+        'model_accs': model_accs,
+        'shap_accs': shap_accs,
+        'pair_agreements': pair_agreements,
+        'overall_agreement': overall_agreement,
+        'n_agree_instances': len(X_agree),
+    }
+
 
 # =============================================================================
-# CROSS-SCENARIO ANALYSIS
+# MAIN EXPERIMENT  (parallelised across scenario × seed combinations)
 # =============================================================================
-print("\n" + "=" * 70)
-print("CROSS-SCENARIO ANALYSIS")
-print("=" * 70)
 
-print(f"\n  {'Scenario':<25} {'Agreement':<15} {'Expected':<10} {'Match'}")
-print(f"  {'-'*25} {'-'*15} {'-'*10} {'-'*10}")
+if __name__ == '__main__':
+    combos = [
+        (scenario_key, seed)
+        for scenario_key in SCENARIOS
+        for seed in [42, 123, 456]
+    ]
 
-for key, result in all_results.items():
-    if 'summary' in result:
-        s = result['summary']
-        name = SCENARIOS[key]['name'][:25]
-        agreement = f"rho = {s['mean_agreement']:.3f}"
-        expected = s['expected']
-        
-        if expected == 'high' and s['mean_agreement'] > 0.5:
-            match = "[OK]"
-        elif expected == 'low' and s['mean_agreement'] < 0.5:
-            match = "[OK]"
-        elif expected == 'medium':
-            match = "~"
-        else:
-            match = "[FAIL]"
-        
-        print(f"  {name:<25} {agreement:<15} {expected:<10} {match}")
+    print(f"\nRunning {len(combos)} scenario-seed combinations "
+          f"on {min(cpu_count(), 5)} workers...\n")
 
-# KEY VALIDATION: Does agreement predict correctness?
-print(f"\n  KEY VALIDATION: Agreement ↔ SHAP Correctness")
-agreements = []
-shap_accuracies_all = []
+    with Pool(processes=min(cpu_count(), 5)) as pool:
+        raw_results = pool.starmap(run_scenario_seed, combos)
 
-for key, result in all_results.items():
-    if 'summary' in result:
-        s = result['summary']
-        agreements.append(s['mean_agreement'])
-        truth_vals = [v for v in s['shap_vs_truth'].values() if v is not None]
-        if truth_vals:
-            shap_accuracies_all.append(np.mean(truth_vals))
+    # -------------------------------------------------------------------------
+    # Aggregate per-scenario (sequential)
+    # -------------------------------------------------------------------------
+    all_results = {}
 
-if len(agreements) >= 3:
-    corr, p_val = stats.spearmanr(agreements, shap_accuracies_all)
-    print(f"    Correlation (agreement vs SHAP accuracy): rho = {corr:.3f}, p = {p_val:.3f}")
-    if corr > 0:
-        print(f"    -> Higher agreement = better explanations [OK] (validates reliability)")
-    else:
-        print(f"    -> No clear relationship (more investigation needed)")
+    for scenario_key, scenario_info in SCENARIOS.items():
+        print(f"\n{'='*70}")
+        print(f"SCENARIO: {scenario_info['name']}")
+        print(f"  {scenario_info['description']}")
+        print(f"  Expected agreement: {scenario_info['expected_agreement']}")
+        print(f"{'='*70}")
 
-# =============================================================================
-# SAVE RESULTS
-# =============================================================================
-print("\n" + "=" * 70)
-print("SAVING RESULTS")
-print("=" * 70)
+        seed_results = [r for r in raw_results if r['scenario_key'] == scenario_key]
 
-output_file = os.path.join(OUTPUT_DIR, '04_synthetic_ground_truth_results.json')
-with open(output_file, 'w') as f:
-    json.dump(all_results, f, indent=4, default=str)
-print(f"\n  Saved: {output_file}")
+        scenario_results = {'info': scenario_info, 'seeds': {}}
+        seed_agreements = []
+        seed_accuracies = {'rf': [], 'gb': [], 'lr': []}
+        seed_shap_accuracies = {'rf': [], 'gb': [], 'lr': []}
 
-# Summary report
-summary_file = os.path.join(OUTPUT_DIR, '04_synthetic_summary.txt')
-with open(summary_file, 'w') as f:
-    f.write("=" * 70 + "\n")
-    f.write("SYNTHETIC GROUND TRUTH VALIDATION -- SUMMARY\n")
-    f.write("=" * 70 + "\n\n")
+        for r in seed_results:
+            seed = r['seed']
+            if r['skipped']:
+                continue
+
+            scenario_results['seeds'][str(seed)] = {
+                'n_agree_instances': r['n_agree_instances'],
+                'pair_agreements': r['pair_agreements'],
+            }
+
+            for name, acc in r['model_accs'].items():
+                seed_accuracies[name].append(acc)
+                print(f"    {name}: accuracy = {acc:.3f}")
+
+            for name, rho in r['shap_accs'].items():
+                seed_shap_accuracies[name].append(rho)
+
+            for p in r['pair_agreements']:
+                print(f"    {p['pair'].replace('-', ' vs ')}: rho = {p['mean_rho']:.3f}")
+
+            if r['overall_agreement'] is not None:
+                seed_agreements.append(r['overall_agreement'])
+
+        if seed_agreements:
+            mean_agreement = float(np.mean(seed_agreements))
+            std_agreement = float(np.std(seed_agreements))
+
+            print(f"\n  SCENARIO SUMMARY: {scenario_info['name']}")
+            print(f"    Mean agreement:   rho = {mean_agreement:.3f} +/- {std_agreement:.3f}")
+            print(f"    Expected:         {scenario_info['expected_agreement']}")
+
+            if scenario_info['expected_agreement'] == 'high' and mean_agreement > 0.5:
+                print(f"    Validation:       [OK] MATCHES EXPECTATION")
+            elif scenario_info['expected_agreement'] == 'low' and mean_agreement < 0.5:
+                print(f"    Validation:       [OK] MATCHES EXPECTATION")
+            elif scenario_info['expected_agreement'] == 'medium':
+                print(f"    Validation:       ~ MIXED (as expected)")
+            else:
+                print(f"    Validation:       [FAIL] DOES NOT MATCH (interesting!)")
+
+            scenario_results['summary'] = {
+                'mean_agreement': mean_agreement,
+                'std_agreement': std_agreement,
+                'expected': scenario_info['expected_agreement'],
+                'model_accuracies': {k: float(np.mean(v)) for k, v in seed_accuracies.items()},
+                'shap_vs_truth': {
+                    k: float(np.mean(v)) if v else None
+                    for k, v in seed_shap_accuracies.items()
+                },
+            }
+
+        all_results[scenario_key] = scenario_results
+
+    # =========================================================================
+    # CROSS-SCENARIO ANALYSIS
+    # =========================================================================
+    print("\n" + "=" * 70)
+    print("CROSS-SCENARIO ANALYSIS")
+    print("=" * 70)
+
+    print(f"\n  {'Scenario':<25} {'Agreement':<15} {'Expected':<10} {'Match'}")
+    print(f"  {'-'*25} {'-'*15} {'-'*10} {'-'*10}")
+
     for key, result in all_results.items():
         if 'summary' in result:
             s = result['summary']
-            f.write(f"Scenario: {SCENARIOS[key]['name']}\n")
-            f.write(f"  Agreement:   rho = {s['mean_agreement']:.3f}\n")
-            f.write(f"  Expected:    {s['expected']}\n")
-            f.write(f"  Accuracies:  {s['model_accuracies']}\n")
-            f.write(f"  SHAP truth:  {s['shap_vs_truth']}\n\n")
+            name = SCENARIOS[key]['name'][:25]
+            agreement = f"rho = {s['mean_agreement']:.3f}"
+            expected = s['expected']
 
-print(f"  Saved: {summary_file}")
-print("\n" + "=" * 70)
-print("EXPERIMENT 04 COMPLETE")
-print("=" * 70)
+            if expected == 'high' and s['mean_agreement'] > 0.5:
+                match = "[OK]"
+            elif expected == 'low' and s['mean_agreement'] < 0.5:
+                match = "[OK]"
+            elif expected == 'medium':
+                match = "~"
+            else:
+                match = "[FAIL]"
+
+            print(f"  {name:<25} {agreement:<15} {expected:<10} {match}")
+
+    # KEY VALIDATION: Does agreement predict correctness?
+    print(f"\n  KEY VALIDATION: Agreement ↔ SHAP Correctness")
+    agreements = []
+    shap_accuracies_all = []
+
+    for key, result in all_results.items():
+        if 'summary' in result:
+            s = result['summary']
+            agreements.append(s['mean_agreement'])
+            truth_vals = [v for v in s['shap_vs_truth'].values() if v is not None]
+            if truth_vals:
+                shap_accuracies_all.append(np.mean(truth_vals))
+
+    if len(agreements) >= 3:
+        corr, p_val = stats.spearmanr(agreements, shap_accuracies_all)
+        print(f"    Correlation (agreement vs SHAP accuracy): rho = {corr:.3f}, p = {p_val:.3f}")
+        if corr > 0:
+            print(f"    -> Higher agreement = better explanations [OK] (validates reliability)")
+        else:
+            print(f"    -> No clear relationship (more investigation needed)")
+
+    # =========================================================================
+    # SAVE RESULTS
+    # =========================================================================
+    print("\n" + "=" * 70)
+    print("SAVING RESULTS")
+    print("=" * 70)
+
+    output_file = os.path.join(OUTPUT_DIR, '04_synthetic_ground_truth_results.json')
+    with open(output_file, 'w') as f:
+        json.dump(all_results, f, indent=4, default=str)
+    print(f"\n  Saved: {output_file}")
+
+    # Summary report
+    summary_file = os.path.join(OUTPUT_DIR, '04_synthetic_summary.txt')
+    with open(summary_file, 'w') as f:
+        f.write("=" * 70 + "\n")
+        f.write("SYNTHETIC GROUND TRUTH VALIDATION -- SUMMARY\n")
+        f.write("=" * 70 + "\n\n")
+        for key, result in all_results.items():
+            if 'summary' in result:
+                s = result['summary']
+                f.write(f"Scenario: {SCENARIOS[key]['name']}\n")
+                f.write(f"  Agreement:   rho = {s['mean_agreement']:.3f}\n")
+                f.write(f"  Expected:    {s['expected']}\n")
+                f.write(f"  Accuracies:  {s['model_accuracies']}\n")
+                f.write(f"  SHAP truth:  {s['shap_vs_truth']}\n\n")
+
+    print(f"  Saved: {summary_file}")
+    print("\n" + "=" * 70)
+    print("EXPERIMENT 04 COMPLETE")
+    print("=" * 70)
