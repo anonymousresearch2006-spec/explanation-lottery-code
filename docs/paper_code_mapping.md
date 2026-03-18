@@ -21,6 +21,7 @@ It ensures full reproducibility and verification of reported findings.
 | **Theorem 2** | **Split-Invariance ($\rho \approx 1.0$ vs $0.37$)** | [02_same_split_proof.py](../scripts/06_theorem/02_same_split_proof.py) |
 | **Theorem 3** | **Dimensionality Effect ($\partial\Delta/\partial d > 0$)** | [03_dimensionality_effect.py](../scripts/06_theorem/03_dimensionality_effect.py) |
 | Figure 6 | Bimodal separation violin plot | [02_same_split_proof.py](../scripts/06_theorem/02_same_split_proof.py) |
+| **Neural Same-Split** | **Within-neural lottery ≈ 9.4% (not 0%), cross-class 59%** | [neural_same_split.py](../scripts/04_official_roadmap/neural_same_split.py) |
 
 ---
 

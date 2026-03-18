@@ -32,5 +32,13 @@
         "domains": 16,
         "total_model_pairs": 93510,
         "high_risk_datasets_count": 7
+    },
+    "neural_same_split": {
+        "within_neural_mean_rho": 0.805,
+        "within_neural_lottery_rate": 0.094,
+        "cross_class_mean_rho": 0.415,
+        "cross_class_lottery_rate": 0.590,
+        "dimensionality_correlation_rho": 0.435,
+        "dimensionality_correlation_p": 0.055
     }
 }
