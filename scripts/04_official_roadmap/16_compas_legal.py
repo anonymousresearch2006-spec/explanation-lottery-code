@@ -31,7 +31,7 @@ warnings.filterwarnings('ignore')
 
 # Setup
 PROJECT_DIR = 'results'
-RESULTS_DIR = os.path.join(PROJECT_DIR, 'results')
+RESULTS_DIR = 'results'
 OUTPUT_DIR = os.path.join(RESULTS_DIR, 'optimised_001', '16_compas_legal')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

@@ -27,7 +27,7 @@ import os
 
 # Setup
 PROJECT_DIR = 'results'
-RESULTS_DIR = os.path.join(PROJECT_DIR, 'results')
+RESULTS_DIR = 'results'
 OUTPUT_DIR = os.path.join(RESULTS_DIR, 'optimised_001', '11_reliability_score')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

@@ -23,7 +23,7 @@ from collections import Counter
 
 # Setup
 PROJECT_DIR = 'results'
-RESULTS_DIR = os.path.join(PROJECT_DIR, 'results')
+RESULTS_DIR = 'results'
 OUTPUT_DIR = os.path.join(RESULTS_DIR, 'optimised_001', '02_tone_down_claims')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

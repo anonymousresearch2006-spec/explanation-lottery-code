@@ -24,7 +24,7 @@ import os
 
 # Setup
 PROJECT_DIR = 'results'
-RESULTS_DIR = os.path.join(PROJECT_DIR, 'results')
+RESULTS_DIR = 'results'
 OUTPUT_DIR = os.path.join(RESULTS_DIR, 'optimised_001', '06_contribution_positioning')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
