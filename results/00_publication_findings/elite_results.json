@@ -40,5 +40,13 @@
         "cross_class_lottery_rate": 0.590,
         "dimensionality_correlation_rho": 0.435,
         "dimensionality_correlation_p": 0.055
+    },
+    "key_quantitative_results": {
+        "lottery_rate_rho_05": "35.4%",
+        "mean_spearman_p": "0.57 +/- 0.30",
+        "mnist_lottery_rate": "32.2%",
+        "reliability_score_threshold": ">= 0.7",
+        "geometric_divergence": "51.7 degrees",
+        "cohens_d": 1.41
     }
 }
